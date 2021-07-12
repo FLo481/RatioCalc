@@ -26,9 +26,12 @@ def readinGaugedata(dirName):
     msquaredgauge = []
     gsquaredgauge = []
 
+    # For the l=1 modes add the following
+    # "LargeDS_Gauge_l m_q=1.31.txt"
+
     for root, dirs , files in os.walk(dirName):
         for file in files:
-            if file.endswith("LargeDS_Gauge_l=1 m_q=0.40.txt"):
+            if file.endswith("LargeDS_Gauge m_q=0.40.txt"):
                 print("Reading in file " + os.path.join(root, file))
                 with open(os.path.join(root, file)) as f:
                     reader = csv.reader(f, delimiter = '\t')
@@ -194,6 +197,8 @@ def ratiocalcGMinus(dirName):
     mut_gsquared = []
     index_temp = []
     max_ratio = 0
+    ratio_m_GMinus = []
+    ratio_m_Gauge = []
     n = 0
     m = 0
 
@@ -217,6 +222,8 @@ def ratiocalcGMinus(dirName):
     gsquared = list(map(float, gsquared))
     msquaredgauge = list(map(float, msquaredgauge))
     gsquaredgauge = list(map(float, gsquaredgauge))
+    ratio_m_GMinus = list(map(float, ratio_m_GMinus))
+    ratio_m_Gauge = list(map(float, ratio_m_Gauge))
 
     for i in range(len(gsquared)):
         if i < m:
@@ -235,6 +242,8 @@ def ratiocalcGMinus(dirName):
                 if max_ratio is ratio_temp[k]:
                     mut_gsquared.append(gsquaredgauge[index_temp[k]])
                     m_ratio.append(np.sqrt(mesinomsquared[i]/msquaredgauge[index_temp[k]]))
+                    ratio_m_GMinus.append(np.sqrt(mesinomsquared[i]))
+                    ratio_m_Gauge.append(np.sqrt(msquaredgauge[index_temp[k]]))
 
             n = 0
             max_ratio = 0
@@ -251,7 +260,7 @@ def ratiocalcGMinus(dirName):
     #for i in range(len(mut_gsquared)):
     #    print(str(mut_gsquared[i]) + " " + str(m_ratio[i]))
 
-    csv_writer(dirName + "\GMinus_over_Gauge_mq=0.40.txt", mut_gsquared, m_ratio)
+    csv_writer2(dirName + "\GMinus_over_Gauge_mq=0.40.txt", mut_gsquared, m_ratio, ratio_m_GMinus, ratio_m_Gauge)
 
     return 0
 
@@ -272,7 +281,7 @@ def ratiocalcFMinus(dirName):
 
     for root, dirs , files in os.walk(dirName):
         for file in files:
-            if file.endswith("LargeDS_FMinus m_q=0.40.txt"):
+            if file.endswith("LargeDS_FMinus m_q=1.31.txt"):
                 print("Reading in file " + os.path.join(root, file))
                 with open(os.path.join(root, file)) as f:
                     reader = csv.reader(f, delimiter = '\t')
@@ -322,7 +331,7 @@ def ratiocalcFMinus(dirName):
     #for i in range(len(mut_gsquared)):
     #    print(str(mut_gsquared[i]) + " " + str(m_ratio[i]))
 
-    csv_writer(dirName + "\FMinus_over_Gauge_mq=0.40.txt", mut_gsquared, m_ratio)
+    csv_writer(dirName + "\FMinus_over_Gauge_mq=1.31.txt", mut_gsquared, m_ratio)
 
     return 0
 
@@ -347,12 +356,37 @@ def csv_writer(filename, mut_gsquared, m_ratio):
 
     return 0
 
+def csv_writer2(filename, mut_gsquared, m_ratio, m_FermMode, m_Gauge):
+
+    #mut_gsquared = list(map(str, mut_gsquared))
+    #m_ratio = list(map(str, m_ratio))
+    mut_gsquared_temp = ''
+    m_ratio_temp = ''
+    m_FermMode_temp = ''
+    m_Gauge_temp = ''
+
+    with open(filename, 'w', newline='\n') as file:
+        writer = csv.writer(file)
+        for i in range(len(m_ratio)):
+            mut_gsquared_temp = str(mut_gsquared[i])
+            m_ratio_temp = str(m_ratio[i])
+            m_FermMode_temp = str(m_FermMode[i])
+            m_Gauge_temp = str(m_Gauge[i])
+            #print(mut_gsquared_temp + "\t" + m_ratio_temp)
+            writer.writerow([mut_gsquared_temp] + [m_ratio_temp] + [m_FermMode_temp] + [m_Gauge_temp])
+
+    print("Data written to file %s" % filename)
+
+    file.close()
+
+    return 0
+
 def main():
     dirName = r"C:\Users\Flo\Desktop\Masterarbeit\Mathematica\CompData\Ratios"
     #ratiocalcFPLUS(dirName)
     #ratiocalcGPLUS(dirName)
-    #ratiocalcGMinus(dirName)
-    ratiocalcFMinus(dirName)
+    ratiocalcGMinus(dirName)
+    #ratiocalcFMinus(dirName)
 
 if __name__ == "__main__" :
     main()
