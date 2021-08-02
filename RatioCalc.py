@@ -21,8 +21,10 @@ def find_max_in_list(example_list):
 
     return maximum
 
-def readinGaugedata(dirName):
+def readindata(dirName, fileNameMesino, fileNameGauge):
 
+    mesinomsquared = []
+    gsquared = []
     msquaredgauge = []
     gsquaredgauge = []
 
@@ -31,31 +33,7 @@ def readinGaugedata(dirName):
 
     for root, dirs , files in os.walk(dirName):
         for file in files:
-            if file.endswith("LargeDS_Gauge L=0.40.txt"):
-                print("Reading in file " + os.path.join(root, file))
-                with open(os.path.join(root, file)) as f:
-                    reader = csv.reader(f, delimiter = '\t')
-                    for row in reader:
-                       #print(row[0])
-                       #print(row[1])
-                       msquaredgauge.append(row[0])
-                       gsquaredgauge.append(row[1])
-
-    f.close()
-
-    return msquaredgauge, gsquaredgauge
-
-def readinGaugedata_temp(dirName):
-
-    msquaredgauge = []
-    gsquaredgauge = []
-
-    # For the l=1 modes add the following
-    # "LargeDS_Gauge_l m_q=1.31.txt"
-
-    for root, dirs , files in os.walk(dirName):
-        for file in files:
-            if file.endswith("LargeDS_Gauge L=0.40.txt"):
+            if file.endswith(fileNameGauge):
                 print("Reading in file " + os.path.join(root, file))
                 with open(os.path.join(root, file)) as f:
                     reader = csv.reader(f, delimiter = '\t')
@@ -70,26 +48,16 @@ def readinGaugedata_temp(dirName):
     msquaredgauge = list(map(float, msquaredgauge))
     gsquaredgauge = list(map(float, gsquaredgauge))
 
-    return msquaredgauge, gsquaredgauge
-
-def readinMesinodata(dirName, fileName):
-
-    mesinomsquared = []
-    gsquared = []
-
-    #does this work?
-    Null , Null , gsquaredgaugemax = readinGaugedata_temp(dirName)
-
     for root, dirs , files in os.walk(dirName):
        for file in files:
-           if file.endswith(fileName):
+           if file.endswith(fileNameMesino):
                print("Reading in file " + os.path.join(root, file))
                with open(os.path.join(root, file)) as f:
                    reader = csv.reader(f, delimiter = '\t')
                    for row in reader:
                       #print(row[0])
                       #print(row[1])
-                      if row[1] > 0 and row[1] <= gsquaredgaugemax:
+                      if float(row[1]) > 0 and float(row[1]) <= gsquaredgauge[0]:
                         mesinomsquared.append(row[0])
                         gsquared.append(row[1])
  
@@ -98,20 +66,17 @@ def readinMesinodata(dirName, fileName):
     mesinomsquared = list(map(float, mesinomsquared))
     gsquared = list(map(float, gsquared))
 
-    return mesinomsquared, gsquared
+    return mesinomsquared, gsquared, msquaredgauge, gsquaredgauge
 
-def ratiocalc(dirName, fileName, mesinomsquared, gsquared):
+def ratiocalc(mesinomsquared, gsquared, msquaredgauge, gsquaredgauge):
 
     ratio_temp = []
     ratio = []
     m_ratio = []
     mut_gsquared = []
     index_temp = []
-    #max_ratio = 0
     n = 0
     m = 0
-
-    msquaredgauge, gsquaredgauge = readinGaugedata(dirName)
 
     for i in range(len(gsquared)):
         if i < m:
@@ -146,301 +111,41 @@ def ratiocalc(dirName, fileName, mesinomsquared, gsquared):
 
 def ratiocalcFPLUS(dirName):
 
-    #mesinomsquared = []
-    #gsquared = []
-    #ratio_temp = []
-    #ratio = []
-    #m_ratio = []
-    #mut_gsquared = []
-    #index_temp = []
-    #max_ratio = 0
-    #n = 0
-    #m = 0
+    mesinomsquared, gsquared, msquaredgauge, gsquaredgauge = readindata(dirName, "LargeDS_FPlus L=0.40.txt", "LargeDS_Gauge L=0.40.txt")
 
-    mesinomsquared, gsquared = readinMesinodata(dirName, "LargeDS_FPlus L=0.40.txt")
+    mut_gsquared, m_ratio = ratiocalc(mesinomsquared, gsquared, msquaredgauge, gsquaredgauge)
 
-    mut_gsquared, max_ratio = ratiocalc(dirName, "LargeDS_FPlus L=0.40.txt", mesinomsquared, gsquared)
-
-    #for root, dirs , files in os.walk(dirName):
-    #    for file in files:
-    #        if file.endswith("LargeDS_FPlus L=0.40.txt"):
-    #            print("Reading in file " + os.path.join(root, file))
-    #            with open(os.path.join(root, file)) as f:
-    #                reader = csv.reader(f, delimiter = '\t')
-    #                for row in reader:
-                       #print(row[0])
-                       #print(row[1])
-    #                   mesinomsquared.append(row[0])
-    #                   gsquared.append(row[1])
- 
-    #f.close()
-
-    #mesinomsquared = list(map(float, mesinomsquared))
-    #gsquared = list(map(float, gsquared))
-    #msquaredgauge = list(map(float, msquaredgauge))
-    #gsquaredgauge = list(map(float, gsquaredgauge))
-
-    #for i in range(len(gsquared)):
-    #    if i < m:
-    #        continue
-    #    else:
-    #        for j in range(len(gsquaredgauge)):
-    #            if gsquared[i] > 0 and gsquaredgauge[j] > 0:
-    #                if gsquared[i] / gsquaredgauge[j] < 1 and gsquared[i] / gsquaredgauge[j] > 0.995:
-    #                    n += 1
-    #                    index_temp.append(j)
-    #                    ratio_temp.append(gsquared[i] / gsquaredgauge[j])
-
-    #        max_ratio = find_max_in_list(ratio_temp)     
-
-    #        for k in range(n):
-    #            if max_ratio is ratio_temp[k]:
-    #                mut_gsquared.append(gsquaredgauge[index_temp[k]])
-    #                m_ratio.append(np.sqrt(mesinomsquared[i] / msquaredgauge[index_temp[k]]))
-
-    #        n = 0
-    #        max_ratio = 0
-    #        ratio_temp = []
-    #        index_temp = []
-
-    #    m = 0
-
-    #    for k in range(len(gsquared)):
-    #            if gsquared[i] - gsquared[k] < 0.01:
-    #                m += 1
-        
-    #for i in range(len(mut_gsquared)):
-    #    print(str(mut_gsquared[i]) + " " + str(m_ratio[i]))
-
-    csv_writer(dirName + "\FPlus_over_Gauge_L=0.40.txt", mut_gsquared, m_ratio)
+    csv_writer(dirName + "/FPlus_over_Gauge_L=0.40.txt", mut_gsquared, m_ratio)
 
     return 0
 
 def ratiocalcGPLUS(dirName):
 
-    mesinomsquared = []
-    gsquared = []
-    ratio_temp = []
-    ratio = []
-    m_ratio = []
-    mut_gsquared = []
-    index_temp = []
-    max_ratio = 0
-    n = 0
-    m = 0
-    p = 0
+    mesinomsquared, gsquared, msquaredgauge, gsquaredgauge = readindata(dirName, "LargeDS_GPlus L=0.40.txt", "LargeDS_Gauge L=0.40.txt")    
 
-    msquaredgauge, gsquaredgauge = readinGaugedata(dirName)
+    mut_gsquared, m_ratio = ratiocalc(mesinomsquared, gsquared, msquaredgauge, gsquaredgauge)
 
-    for root, dirs , files in os.walk(dirName):
-        for file in files:
-            if file.endswith("LargeDS_GPlus L=0.40.txt"):
-                print("Reading in file " + os.path.join(root, file))
-                with open(os.path.join(root, file)) as f:
-                    reader = csv.reader(f, delimiter = '\t')
-                    for row in reader:
-                       #print(row[0])
-                       #print(row[1])
-                       mesinomsquared.append(row[0])
-                       gsquared.append(row[1])
- 
-    f.close()
-
-    mesinomsquared = list(map(float, mesinomsquared))
-    gsquared = list(map(float, gsquared))
-    msquaredgauge = list(map(float, msquaredgauge))
-    gsquaredgauge = list(map(float, gsquaredgauge))
-
-    for i in range(len(gsquared)):
-        #search for number of g^2 values in FPlus list that are smaller than
-        #the maximum g^2 in the gauge list
-        #this will save some computation time
-        if gsquaredgauge[0] >= gsquared[i]:
-            if i < m:
-                continue
-            else:
-                for j in range(len(gsquaredgauge)):
-                    if gsquared[i] > 0 and gsquaredgauge[j] > 0:
-                        if gsquared[i] / gsquaredgauge[j] < 1 and gsquared[i] / gsquaredgauge[j] > 0.995:
-                            n += 1
-                            index_temp.append(j)
-                            ratio_temp.append(gsquared[i] / gsquaredgauge[j])
-
-                max_ratio = find_max_in_list(ratio_temp)        
-
-                for k in range(n):
-                    if max_ratio is ratio_temp[k]:
-                        mut_gsquared.append(gsquaredgauge[index_temp[k]])
-                        m_ratio.append(np.sqrt(mesinomsquared[i] / msquaredgauge[index_temp[k]]))
-
-                n = 0
-                max_ratio = 0
-                ratio_temp = []
-                index_temp = []
-
-            m = 0
-
-            #check if subsequent values of g^2 of the GPlus modes are similar
-            #in the non-SUSY case 0.01 is recommended
-            #in the SUSY case 1 is recommended
-            for k in range(len(gsquared)):
-                    if gsquared[i] - gsquared[k] < 1:
-                        m += 1
-
-    #for i in range(len(mut_gsquared)):
-    #    print(str(mut_gsquared[i]) + " " + str(m_ratio[i]))
-
-    csv_writer(dirName + "\GPlus_over_Gauge_L=0.40.txt", mut_gsquared, m_ratio)
+    csv_writer(dirName + "/GPlus_over_Gauge_L=0.40.txt", mut_gsquared, m_ratio)
 
     return 0
 
 def ratiocalcGMinus(dirName):
 
-    mesinomsquared = []
-    gsquared = []
-    ratio_temp = []
-    ratio = []
-    m_ratio = []
-    mut_gsquared = []
-    index_temp = []
-    max_ratio = 0
-    ratio_m_GMinus = []
-    ratio_m_Gauge = []
-    n = 0
-    m = 0
+    mesinomsquared, gsquared, msquaredgauge, gsquaredgauge = readindata(dirName, "LargeDS_GMinus L=0.40.txt", "LargeDS_Gauge L=0.40.txt")
 
-    msquaredgauge, gsquaredgauge = readinGaugedata(dirName)
+    mut_gsquared, m_ratio = ratiocalc(mesinomsquared, gsquared, msquaredgauge, gsquaredgauge)
 
-    for root, dirs , files in os.walk(dirName):
-        for file in files:
-            if file.endswith("LargeDS_GMinus L=0.40.txt"):
-                print("Reading in file " + os.path.join(root, file))
-                with open(os.path.join(root, file)) as f:
-                    reader = csv.reader(f, delimiter = '\t')
-                    for row in reader:
-                       #print(row[0])
-                       #print(row[1])
-                       mesinomsquared.append(row[0])
-                       gsquared.append(row[1])
- 
-    f.close()
-
-    mesinomsquared = list(map(float, mesinomsquared))
-    gsquared = list(map(float, gsquared))
-    msquaredgauge = list(map(float, msquaredgauge))
-    gsquaredgauge = list(map(float, gsquaredgauge))
-    ratio_m_GMinus = list(map(float, ratio_m_GMinus))
-    ratio_m_Gauge = list(map(float, ratio_m_Gauge))
-
-    for i in range(len(gsquared)):
-        if i < m:
-            continue
-        else:
-            for j in range(len(gsquaredgauge)):
-                if gsquared[i] > 0 and gsquaredgauge[j] > 0:
-                    if gsquared[i] / gsquaredgauge[j] < 1 and gsquared[i] / gsquaredgauge[j] > 0.995:
-                        n += 1
-                        index_temp.append(j)
-                        ratio_temp.append(gsquared[i] / gsquaredgauge[j])
-
-            max_ratio = find_max_in_list(ratio_temp)        
-
-            for k in range(n):
-                if max_ratio is ratio_temp[k]:
-                    mut_gsquared.append(gsquaredgauge[index_temp[k]])
-                    m_ratio.append(np.sqrt(mesinomsquared[i] / msquaredgauge[index_temp[k]]))
-                    ratio_m_GMinus.append(np.sqrt(mesinomsquared[i]))
-                    ratio_m_Gauge.append(np.sqrt(msquaredgauge[index_temp[k]]))
-
-            n = 0
-            max_ratio = 0
-            ratio_temp = []
-            index_temp = []
-
-        m = 0
-
-        for k in range(len(gsquared)):
-                if gsquared[i] - gsquared[k] < 0.01:
-                    m += 1
-        
-
-    #for i in range(len(mut_gsquared)):
-    #    print(str(mut_gsquared[i]) + " " + str(m_ratio[i]))
-
-    #csv_writer2(dirName + "\GMinus_over_Gauge_mq=10^-6.txt", mut_gsquared,
-    #m_ratio, ratio_m_GMinus, ratio_m_Gauge)
-    csv_writer(dirName + "\GMinus_over_Gauge L=0.40", mut_gsquared, m_ratio)
+    csv_writer(dirName + "/GMinus_over_Gauge_L=0.40.txt", mut_gsquared, m_ratio)
 
     return 0
 
 def ratiocalcFMinus(dirName):
 
-    mesinomsquared = []
-    gsquared = []
-    ratio_temp = []
-    ratio = []
-    m_ratio = []
-    mut_gsquared = []
-    index_temp = []
-    max_ratio = 0
-    n = 0
-    m = 0
+    mesinomsquared, gsquared, msquaredgauge, gsquaredgauge = readindata(dirName, "LargeDS_FMinus L=0.40.txt", "LargeDS_Gauge_l=1 L=0.40.txt")
 
-    msquaredgauge, gsquaredgauge = readinGaugedata(dirName)
+    mut_gsquared, m_ratio = ratiocalc(mesinomsquared, gsquared, msquaredgauge, gsquaredgauge)
 
-    for root, dirs , files in os.walk(dirName):
-        for file in files:
-            if file.endswith("LargeDS_FMinus m_q=1.31.txt"):
-                print("Reading in file " + os.path.join(root, file))
-                with open(os.path.join(root, file)) as f:
-                    reader = csv.reader(f, delimiter = '\t')
-                    for row in reader:
-                       #print(row[0])
-                       #print(row[1])
-                       mesinomsquared.append(row[0])
-                       gsquared.append(row[1])
- 
-    f.close()
-
-    mesinomsquared = list(map(float, mesinomsquared))
-    gsquared = list(map(float, gsquared))
-    msquaredgauge = list(map(float, msquaredgauge))
-    gsquaredgauge = list(map(float, gsquaredgauge))
-
-    for i in range(len(gsquared)):
-        if i < m:
-            continue
-        else:
-            for j in range(len(gsquaredgauge)):
-                if gsquared[i] > 0 and gsquaredgauge[j] > 0:
-                    if gsquared[i] / gsquaredgauge[j] < 1 and gsquared[i] / gsquaredgauge[j] > 0.995:
-                        n += 1
-                        index_temp.append(j)
-                        ratio_temp.append(gsquared[i] / gsquaredgauge[j])
-
-            max_ratio = find_max_in_list(ratio_temp)        
-
-            for k in range(n):
-                if max_ratio is ratio_temp[k]:
-                    mut_gsquared.append(gsquaredgauge[index_temp[k]])
-                    m_ratio.append(np.sqrt(mesinomsquared[i] / msquaredgauge[index_temp[k]]))
-
-            n = 0
-            max_ratio = 0
-            ratio_temp = []
-            index_temp = []
-
-        m = 0
-
-        for k in range(len(gsquared)):
-                if gsquared[i] - gsquared[k] < 0.01:
-                    m += 1
-        
-
-    #for i in range(len(mut_gsquared)):
-    #    print(str(mut_gsquared[i]) + " " + str(m_ratio[i]))
-
-    csv_writer(dirName + "\FMinus_over_Gauge_mq=1.31.txt", mut_gsquared, m_ratio)
+    csv_writer(dirName + "/FMinus_over_Gauge_L=0.40.txt", mut_gsquared, m_ratio)
 
     return 0
 
@@ -494,11 +199,12 @@ def main():
     #nonSUSY
     #dirName = r"C:\Users\Flo\Desktop\Masterarbeit\Mathematica\CompData\Ratios"
     #SUSY
-    dirName = r"C:\Users\Flo\Desktop\Masterarbeit\Mathematica\CompData\Ratios\SUSY"
+    #dirName = r"C:\Users\Flo\Desktop\Masterarbeit\Mathematica\CompData\Ratios\SUSY"
+    dirName = r"/opt/RatioCalc/Ratios/SUSY"
 
     #ratiocalcFPLUS(dirName)
-    #ratiocalcGPLUS(dirName)
-    ratiocalcGMinus(dirName)
+    ratiocalcGPLUS(dirName)
+    #ratiocalcGMinus(dirName)
     #ratiocalcFMinus(dirName)
 if __name__ == "__main__" :
     main()
