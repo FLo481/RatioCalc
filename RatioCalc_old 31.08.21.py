@@ -2,8 +2,6 @@ import numpy as np
 import csv
 import os
 
-#from numpy.lib.ufunclike import isposinf
-
 def find_max_in_list(example_list):
 
     maximum = 0
@@ -30,6 +28,9 @@ def readindata(dirName, fileNameMesino, fileNameGauge):
     msquaredgauge = []
     gsquaredgauge = []
 
+    # For the l=1 modes add the following
+    # "LargeDS_Gauge_l m_q=1.31.txt"
+
     for root, dirs , files in os.walk(dirName):
         for file in files:
             if file.endswith(fileNameGauge):
@@ -37,11 +38,10 @@ def readindata(dirName, fileNameMesino, fileNameGauge):
                 with open(os.path.join(root, file)) as f:
                     reader = csv.reader(f, delimiter = '\t')
                     for row in reader:
-                        if float(row[1]) > 0:
-                        #print(row[0])
-                        #print(row[1])
-                            msquaredgauge.append(row[0])
-                            gsquaredgauge.append(row[1])
+                       #print(row[0])
+                       #print(row[1])
+                       msquaredgauge.append(row[0])
+                       gsquaredgauge.append(row[1])
 
     f.close()
 
@@ -71,80 +71,81 @@ def readindata(dirName, fileNameMesino, fileNameGauge):
 def ratiocalc(mesinomsquared, gsquared, msquaredgauge, gsquaredgauge):
 
     ratio_temp = []
+    ratio = []
     m_ratio = []
     mut_gsquared = []
     index_temp = []
-    max_ratio = 0
+    n = 0
+    m = 0
 
     for i in range(len(gsquared)):
-        for j in range(len(gsquaredgauge)):
-        #gsquared and gsquaredgauge have to agree within a 0.5% margin
-            if gsquared[i] / gsquaredgauge[j] < 1 and gsquared[i] / gsquaredgauge[j] > 0.995:
-                index_temp.append(j)
-                ratio_temp.append(gsquared[i] / gsquaredgauge[j])
-        
-        #safe the max ration in a variable for less runtime
-        max_ratio = find_max_in_list(ratio_temp)
-            
-        #the maximum (best agreement within the 0.5% margin) is searched for
-        for k in range(len(index_temp)):
-            if max_ratio is ratio_temp[k]:
-                #check whether there is already the same gsquared value in the mut_gsquared array
-                if gsquaredgauge[index_temp[k]] not in mut_gsquared:
+        if i < m:
+            continue
+        else:
+            for j in range(len(gsquaredgauge)):
+                if gsquared[i] > 0 and gsquaredgauge[j] > 0:
+                    if gsquared[i] / gsquaredgauge[j] < 1 and gsquared[i] / gsquaredgauge[j] > 0.995:
+                        n += 1
+                        index_temp.append(j)
+                        ratio_temp.append(gsquared[i] / gsquaredgauge[j])
+
+            #max_ratio = find_max_in_list(ratio_temp)
+
+            for k in range(n):
+                if find_max_in_list(ratio_temp) is ratio_temp[k]:
                     mut_gsquared.append(gsquaredgauge[index_temp[k]])
                     m_ratio.append(np.sqrt(mesinomsquared[i] / msquaredgauge[index_temp[k]]))
 
-        max_ratio = 0         
-        ratio_temp = []
-        index_temp = []
-                    
+            n = 0
+            max_ratio = 0
+            ratio_temp = []
+            index_temp = []
+
+        m = 0
+
+        for k in range(len(gsquared)):
+                if gsquared[i] - gsquared[k] < 0.01:
+                    m += 1
+
     return mut_gsquared, m_ratio
 
 def ratiocalcFPLUS(dirName):
 
-    #For the SUSY datasets the naming scheme is LargeDS_"Mode" L="UV quark mass".txt and for the non-SUSY ones LargeDS_"Mode" m_q="UV quark mass".txt
-
-    mesinomsquared, gsquared, msquaredgauge, gsquaredgauge = readindata(dirName, "LargeDS_FPlus m_q=0.40.txt", "LargeDS_Gauge m_q=0.40.txt")
+    mesinomsquared, gsquared, msquaredgauge, gsquaredgauge = readindata(dirName, "LargeDS_FPlus L=0.40.txt", "LargeDS_Gauge L=0.40.txt")
 
     mut_gsquared, m_ratio = ratiocalc(mesinomsquared, gsquared, msquaredgauge, gsquaredgauge)
 
-    csv_writer(dirName + "/FPlus_over_Gauge m_q=0.40.txt", mut_gsquared, m_ratio)
+    csv_writer(dirName + "\FPlus_over_Gauge_L=0.40.txt", mut_gsquared, m_ratio)
 
     return 0
 
 def ratiocalcGPLUS(dirName):
 
-    #For the SUSY datasets the naming scheme is LargeDS_"Mode" L="UV quark mass".txt and for the non-SUSY ones LargeDS_"Mode" m_q="UV quark mass".txt
-
-    mesinomsquared, gsquared, msquaredgauge, gsquaredgauge = readindata(dirName, "LargeDS_GPlus m_q=0.40.txt", "LargeDS_Gauge m_q=0.40.txt")    
+    mesinomsquared, gsquared, msquaredgauge, gsquaredgauge = readindata(dirName, "LargeDS_GPlus L=0.40.txt", "LargeDS_Gauge L=0.40.txt")    
 
     mut_gsquared, m_ratio = ratiocalc(mesinomsquared, gsquared, msquaredgauge, gsquaredgauge)
 
-    csv_writer(dirName + "/GPlus_over_Gauge m_q=0.40.txt", mut_gsquared, m_ratio)
+    csv_writer(dirName + "\GPlus_over_Gauge_L=0.40.txt", mut_gsquared, m_ratio)
 
     return 0
 
 def ratiocalcGMinus(dirName):
 
-    #For the SUSY datasets the naming scheme is LargeDS_"Mode" L="UV quark mass".txt and for the non-SUSY ones LargeDS_"Mode" m_q="UV quark mass".txt
-
-    mesinomsquared, gsquared, msquaredgauge, gsquaredgauge = readindata(dirName, "LargeDS_GMinus m_q=0.40.txt", "LargeDS_Gauge m_q=0.40.txt")
+    mesinomsquared, gsquared, msquaredgauge, gsquaredgauge = readindata(dirName, "LargeDS_GMinus L=0.40.txt", "LargeDS_Gauge L=0.40.txt")
 
     mut_gsquared, m_ratio = ratiocalc(mesinomsquared, gsquared, msquaredgauge, gsquaredgauge)
 
-    csv_writer(dirName + "/GMinus_over_Gauge m_q=0.40.txt", mut_gsquared, m_ratio)
+    csv_writer(dirName + "\GMinus_over_Gauge_L=0.40.txt", mut_gsquared, m_ratio)
 
     return 0
 
 def ratiocalcFMinus(dirName):
 
-    #For the SUSY datasets the naming scheme is LargeDS_"Mode" L="UV quark mass".txt and for the non-SUSY ones LargeDS_"Mode" m_q="UV quark mass".txt
-
-    mesinomsquared, gsquared, msquaredgauge, gsquaredgauge = readindata(dirName, "LargeDS_FMinus m_q=10^-6.txt", "LargeDS_Gauge_l=1 m_q=10^-6.txt")
+    mesinomsquared, gsquared, msquaredgauge, gsquaredgauge = readindata(dirName, "LargeDS_FMinus L=0.40.txt", "LargeDS_Gauge_l=1 L=0.40.txt")
 
     mut_gsquared, m_ratio = ratiocalc(mesinomsquared, gsquared, msquaredgauge, gsquaredgauge)
 
-    csv_writer(dirName + "/FMinus_over_Gauge m_q=10^-6.txt", mut_gsquared, m_ratio)
+    csv_writer(dirName + "\FMinus_over_Gauge_L=0.40.txt", mut_gsquared, m_ratio)
 
     return 0
 
@@ -196,15 +197,14 @@ def csv_writer2(filename, mut_gsquared, m_ratio, m_FermMode, m_Gauge):
 
 def main():
     #nonSUSY
-    #dirName = r"C:\Users\Flo\Desktop\Masterarbeit\Mathematica\CompData\Ratios\non-SUSY"
-    dirName = r"/home/flo/Mathematica_data/CompData/Ratios/non-SUSY"
+    #dirName = r"C:\Users\Flo\Desktop\Masterarbeit\Mathematica\CompData\Ratios"
     #SUSY
-    #dirName = r"C:\Users\Flo\Desktop\Masterarbeit\Mathematica\CompData\Ratios\SUSY"
-    #dirName = r"/home/flo/Mathematica_data/CompData/Ratios/SUSY"
+    dirName = r"C:\Users\Flo\Desktop\Masterarbeit\Mathematica\CompData\Ratios\SUSY"
+    #dirName = r"/opt/RatioCalc/Ratios/SUSY"
 
-    ratiocalcFPLUS(dirName)
+    #ratiocalcFPLUS(dirName)
     ratiocalcGPLUS(dirName)
-    ratiocalcGMinus(dirName)
+    #ratiocalcGMinus(dirName)
     #ratiocalcFMinus(dirName)
 if __name__ == "__main__" :
     main()
